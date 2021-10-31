@@ -33,30 +33,11 @@ async function run() {
         const foodCollections = database.collection('collections');
         const itemsCollection = database.collection('items');
         const specialCollection = database.collection('special');
-
-        // GET ITEMS SERVICES
-        app.get('/services', async (req, res) => {
-            const cursor = itemsCollection.find({});
-            const items = await cursor.toArray()
-            res.send(items);
-        });
-        // GET SPECIAL SERVICES
-        app.get('/special', async (req, res) => {
-            const cursor = specialCollection.find({});
-            const special = await cursor.toArray()
-            res.send(special)
-
-        });
-
-        app.get('/newData', async (req, res) => {
-            const cursor = foodCollections.find({})
-            const collections = await cursor.toArray()
-            res.send(collections)
-
-        })
+        const orderCollection = database.collection('order');
 
 
-        // POST API
+
+        // POST Service
         app.post('/addService', async (req, res) => {
             const special = req.body;
             console.log('hit the post api new', special);
@@ -65,6 +46,63 @@ async function run() {
             console.log(result);
 
         })
+
+        // Order Confirm
+        app.post('/newService', async (req, res) => {
+            const newServices = req.body;
+            console.log('hit the post api new', newServices);
+            res.send('post hitted')
+            const result = await orderCollection.insertOne(newServices);
+            console.log(result);
+        });
+
+
+
+        // GET SPECIAL SERVICES
+        app.get('/special', async (req, res) => {
+            const cursor = specialCollection.find({});
+            const special = await cursor.toArray()
+            res.send(special)
+
+        });
+
+        // GET ITEMS SERVICES
+        app.get('/services', async (req, res) => {
+            const cursor = itemsCollection.find({});
+            const items = await cursor.toArray()
+            res.send(items);
+        });
+
+        app.get('/newData', async (req, res) => {
+            const cursor = foodCollections.find({})
+            const collections = await cursor.toArray()
+            res.send(collections)
+
+        })
+        //   DELETE API
+        // app.delete('/services/:id', async (req, res) => {
+        //     const id = req.params._id;
+        //     const query = { _id: ObjectId(id) };
+        //     const result = await foodCollections.deleteOne(query);
+        //     res.json(result);
+        // })
+
+        app.delete('/services/:id', (req, res) => {
+            foodCollections.deleteOne({ _id: ObjectId(req.params._id) })
+                .then((result) => {
+                    res.send(result.deletedCount > 0)
+                })
+        })
+
+        // get specific services
+        app.get('/specificOrder', (req, res) => {
+            ordersCollection.find({ email: req.query.email })
+                .toArray((err, documents) => {
+                    res.send(documents)
+                })
+        })
+
+
 
     }
 
@@ -91,19 +129,5 @@ app.listen(port, () => {
     console.log('server running at port');
 })
 
- // GET Single Service
-//  app.get('/services/:id', async (req, res) => {
-//     const id = req.params.id;
-//     console.log('getting specific service', id);
-//     const query = { _id: ObjectId(id) };
-//     const service = await servicesCollection.findOne(query);
-//     res.json(service);
-// })
 
-  // DELETE API
-//   app.delete('/services/:id', async (req, res) => {
-//     const id = req.params.id;
-//     const query = { _id: ObjectId(id) };
-//     const result = await servicesCollection.deleteOne(query);
-//     res.json(result);
-// })
+
